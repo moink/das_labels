@@ -9,7 +9,7 @@ from slugify import slugify
 
 # Operation mode
 PREVIEW_MODE = True  # Set to False to actually print labels
-PREVIEW_METHOD = "matplotlib"  # Options: "pil" (basic), "matplotlib" (grid view)
+PREVIEW_METHOD = "pil"  # Options: "pil" (basic), "matplotlib" (grid view)
 SAVE_PREVIEWS = False  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
 
@@ -32,7 +32,7 @@ LABEL_PAPER_SPEC = "11208"  # Die-cut label specification
 
 # Font settings
 LARGE_FONT = ImageFont.truetype("arial.ttf", 80) # Name
-SMALL_FONT = ImageFont.truetype("arial.ttf", 60) # Category and t-shirt size
+SMALL_FONT = ImageFont.truetype("arial.ttf", 40) # Category and t-shirt size
 
 # Printer conversion settings
 PRINT_THRESHOLD = 70  # B&W conversion threshold (0-255): lower = more black
@@ -139,7 +139,6 @@ def save_preview(label_img, name):
     name_slug = slugify(name)
     preview_filename = os.path.join(PREVIEW_SAVE_PATH, f"{name_slug}.png")
     label_img.save(preview_filename)
-    print(f"Preview saved: {preview_filename}")
 
 
 def preview_grid(participants, preview_images):
@@ -154,9 +153,7 @@ def preview_grid(participants, preview_images):
             plt.imshow(img)
             plt.axis('off')
         plt.tight_layout()
-        plt.subplots_adjust(top=0.95)  # Make room for the suptitle
         plt.show()
-        print(f"Displayed {num_images} label previews.")
 
 
 if __name__ == "__main__":
