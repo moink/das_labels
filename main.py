@@ -46,6 +46,7 @@ PRINT_CUT = True  # Cut the label after printing
 
 def main():
     participants = pd.read_csv(INPUT_DATA_PATH)
+    participants.sort_values("T-shirt size", inplace=True)
     qlr = BrotherQLRaster("QL-500")
     prep_preview_dir()
     preview_images = []
