@@ -14,25 +14,25 @@ SAVE_PREVIEWS = False  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
 
 # Constants for layout
-LABEL_SIZE = (696, 315)  # 62x28mm die-cut label (~300dpi, 696×315 pixels)
-LOGO_PRINT_SIZE = (680, 680)
+LABEL_SIZE = (1063, 449)  # 62x28mm die-cut label (~300dpi, 696×315 pixels)
+LOGO_PRINT_SIZE = (1050, 1050)
 LOGO_TOP_LEFT_CORNER_COORDS = ((LABEL_SIZE[0] - LOGO_PRINT_SIZE[0])//2, 5)
 LOGO_COLOUR_MODE = "RGBA"
 BACKGROUND_COLOUR = "white"
 PRINT_COLOUR = "black"
 LABEL_COLOUR_MODE = "RGB"
 PADDING = 10  # Padding from edges
-NAME_VERTICAL_POSITION = 140
+NAME_VERTICAL_POSITION = 200
 
 # File and device settings
 INPUT_DATA_PATH = "names.csv"  # Columns: Name, T-shirt size, Category
 LOGO_IMAGE_PATH = "logo_bw.png"
 PRINTER_ID = "usb://0x04f9:0x2015"  # QL-500 USB ID
-LABEL_PAPER_SPEC = "62x28"  # Die-cut label specification
+LABEL_PAPER_SPEC = "11208"  # Die-cut label specification
 
 # Font settings
-LARGE_FONT = ImageFont.truetype("arial.ttf", 60) # Name
-SMALL_FONT = ImageFont.truetype("arial.ttf", 32) # Category and t-shirt size
+LARGE_FONT = ImageFont.truetype("arial.ttf", 80) # Name
+SMALL_FONT = ImageFont.truetype("arial.ttf", 40) # Category and t-shirt size
 
 # Printer conversion settings
 PRINT_THRESHOLD = 70  # B&W conversion threshold (0-255): lower = more black
@@ -112,6 +112,7 @@ def add_t_shirt_size(draw, tshirt_size):
 
 
 def print_label(label_img, name, qlr):
+    label_img = label_img.rotate(90, expand=True)
     instructions = qlr.convert(
         [label_img],
         label=LABEL_PAPER_SPEC,
