@@ -14,14 +14,14 @@ SAVE_PREVIEWS = False  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
 
 # Constants for layout
-LABEL_SIZE = (1063, 449)  # 62x28mm die-cut label (~300dpi, 696×315 pixels)
+LABEL_SIZE = (1063, 449)  # 38x90mm die-cut label, rotated to landscape
 LOGO_PRINT_SIZE = (1050, 1050)
 LOGO_TOP_LEFT_CORNER_COORDS = ((LABEL_SIZE[0] - LOGO_PRINT_SIZE[0])//2, 5)
 LOGO_COLOUR_MODE = "RGBA"
 BACKGROUND_COLOUR = "white"
 PRINT_COLOUR = "black"
 LABEL_COLOUR_MODE = "RGB"
-PADDING = 10  # Padding from edges
+PADDING = 20  # Padding from edges
 NAME_VERTICAL_POSITION = 200
 
 # File and device settings
@@ -32,7 +32,7 @@ LABEL_PAPER_SPEC = "11208"  # Die-cut label specification
 
 # Font settings
 LARGE_FONT = ImageFont.truetype("arial.ttf", 80) # Name
-SMALL_FONT = ImageFont.truetype("arial.ttf", 40) # Category and t-shirt size
+SMALL_FONT = ImageFont.truetype("arial.ttf", 60) # Category and t-shirt size
 
 # Printer conversion settings
 PRINT_THRESHOLD = 70  # B&W conversion threshold (0-255): lower = more black
