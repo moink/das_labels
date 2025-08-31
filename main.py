@@ -93,7 +93,6 @@ def add_name(draw, name):
 
 
 def get_textsize(draw, text, font):
-
     bbox = draw.textbbox((0, 0), text, font=font)
     width = bbox[2] - bbox[0]
     height = bbox[3] - bbox[1]
