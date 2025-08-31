@@ -9,30 +9,31 @@ from slugify import slugify
 
 # Operation mode
 PREVIEW_MODE = True  # Set to False to actually print labels
-PREVIEW_METHOD = "pil"  # Options: "pil" (basic), "matplotlib" (grid view)
+PREVIEW_METHOD = "matplotlib"  # Options: "pil" (basic), "matplotlib" (grid view)
 SAVE_PREVIEWS = False  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
 
+# Font settings
+LARGE_FONT = ImageFont.truetype("Inter-Bold.ttf", 100) # Name
+SMALL_FONT = ImageFont.truetype("Inter-Regular.ttf", 50) # Category and t-shirt size
+
 # Constants for layout
 LABEL_SIZE = (1063, 449)  # 38x90mm die-cut label, rotated to landscape
-LOGO_PRINT_SIZE = (1050, 1050)
-LOGO_TOP_LEFT_CORNER_COORDS = ((LABEL_SIZE[0] - LOGO_PRINT_SIZE[0])//2, 5)
+PADDING = 5  # Padding from edges
 LOGO_COLOUR_MODE = "RGBA"
 BACKGROUND_COLOUR = "white"
 PRINT_COLOUR = "black"
 LABEL_COLOUR_MODE = "RGB"
-PADDING = 20  # Padding from edges
 NAME_VERTICAL_POSITION = 200
+_, DESCENT = SMALL_FONT.getmetrics()
+BOTTOM_PADDING = PADDING + DESCENT
 
 # File and device settings
 INPUT_DATA_PATH = "names.csv"  # Columns: Name, T-shirt size, Category
 LOGO_IMAGE_PATH = "logo_bw.png"
+PRINTER_MODEL = "QL-500"
 PRINTER_ID = "usb://0x04f9:0x2015"  # QL-500 USB ID
 LABEL_PAPER_SPEC = "11208"  # Die-cut label specification
-
-# Font settings
-LARGE_FONT = ImageFont.truetype("arial.ttf", 80) # Name
-SMALL_FONT = ImageFont.truetype("arial.ttf", 40) # Category and t-shirt size
 
 # Printer conversion settings
 PRINT_THRESHOLD = 70  # B&W conversion threshold (0-255): lower = more black
@@ -47,7 +48,7 @@ PRINT_CUT = True  # Cut the label after printing
 def main():
     participants = pd.read_csv(INPUT_DATA_PATH)
     participants.sort_values("T-shirt size", inplace=True)
-    qlr = BrotherQLRaster("QL-500")
+    qlr = BrotherQLRaster(PRINTER_MODEL)
     prep_preview_dir()
     preview_images = []
     blank_label_template = Image.new(LABEL_COLOUR_MODE, LABEL_SIZE, BACKGROUND_COLOUR)
@@ -71,15 +72,17 @@ def prep_preview_dir():
 
 
 def get_resized_logo():
+    logo_print_size = (LABEL_SIZE[0] - 2 * PADDING, LABEL_SIZE[1] - 2 * PADDING)
     logo_original = Image.open(LOGO_IMAGE_PATH).convert(LOGO_COLOUR_MODE)
-    logo_original.thumbnail(LOGO_PRINT_SIZE)  # resize to fit
+    logo_original.thumbnail(logo_print_size)  # resize to fit
     return logo_original
 
 
 def make_label_with_logo(blank_label_template, logo):
+    logo_top_left_corner_coords = (PADDING, PADDING)
     label_img = blank_label_template.copy()
     draw = ImageDraw.Draw(label_img)
-    label_img.paste(logo, LOGO_TOP_LEFT_CORNER_COORDS, logo)
+    label_img.paste(logo, logo_top_left_corner_coords, logo)
     return draw, label_img
 
 def add_name(draw, name):
@@ -101,15 +104,19 @@ def get_textsize(draw, text, font):
 
 
 def add_participant_category(draw, category_text):
-    _, h_cat = get_textsize(draw, category_text, SMALL_FONT)
-    draw.text((PADDING, LABEL_SIZE[1] - h_cat - PADDING), category_text,
+    _, height = get_textsize(draw, category_text, SMALL_FONT)
+    draw.text((PADDING, LABEL_SIZE[1] - height - BOTTOM_PADDING), category_text,
               fill=PRINT_COLOUR, font=SMALL_FONT)
 
 
 def add_t_shirt_size(draw, tshirt_size):
-    w_size, h_size = get_textsize(draw, tshirt_size, SMALL_FONT)
-    draw.text((LABEL_SIZE[0] - w_size - PADDING, LABEL_SIZE[1] - h_size - PADDING),
-              tshirt_size, fill=PRINT_COLOUR, font=SMALL_FONT)
+    width, height = get_textsize(draw, tshirt_size, SMALL_FONT)
+    draw.text(
+        (LABEL_SIZE[0] - width - PADDING, LABEL_SIZE[1] - height - BOTTOM_PADDING),
+        tshirt_size,
+        fill=PRINT_COLOUR,
+        font=SMALL_FONT
+    )
 
 
 def print_label(label_img, name, qlr):
