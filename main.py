@@ -3,22 +3,26 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
+from brother_ql.backends import guess_backend, backend_factory
+from brother_ql.conversion import convert
 from brother_ql.raster import BrotherQLRaster
 from brother_ql.backends.helpers import send
 from slugify import slugify
 
 # Operation mode
-PREVIEW_MODE = True  # Set to False to actually print labels
+PREVIEW_MODE = False # Set to False to actually print labels
 PREVIEW_METHOD = "matplotlib"  # Options: "pil" (basic), "matplotlib" (grid view)
 SAVE_PREVIEWS = False  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
+PREVIEW_COLUMNS = 10
 
 # Font settings
-LARGE_FONT = ImageFont.truetype("Inter-Bold.ttf", 100) # Name
+LARGE_FONT = ImageFont.truetype("Inter-Bold.ttf", 75) # Name
 SMALL_FONT = ImageFont.truetype("Inter-Regular.ttf", 50) # Category and t-shirt size
 
 # Constants for layout
-LABEL_SIZE = (1063, 449)  # 38x90mm die-cut label, rotated to landscape
+LABEL_SIZE = (991, 413)  # 38x90mm die-cut label, rotated to landscape
+PRINTER_LABEL_SIZE = (LABEL_SIZE[1], LABEL_SIZE[0])
 PADDING = 5  # Padding from edges
 LOGO_COLOUR_MODE = "RGBA"
 BACKGROUND_COLOUR = "white"
@@ -29,11 +33,12 @@ _, DESCENT = SMALL_FONT.getmetrics()
 BOTTOM_PADDING = PADDING + DESCENT
 
 # File and device settings
-INPUT_DATA_PATH = "names.csv"  # Columns: Name, T-shirt size, Category
+# INPUT_DATA_PATH = "names.csv"  # Columns: Name, T-shirt size, Category
+INPUT_DATA_PATH = "test.csv"  # Columns: Name, T-shirt size, Category
 LOGO_IMAGE_PATH = "logo_bw.png"
 PRINTER_MODEL = "QL-500"
 PRINTER_ID = "usb://0x04f9:0x2015"  # QL-500 USB ID
-LABEL_PAPER_SPEC = "11208"  # Die-cut label specification
+LABEL_PAPER_SPEC = "39x90"  # Die-cut label specification
 
 # Printer conversion settings
 PRINT_THRESHOLD = 70  # B&W conversion threshold (0-255): lower = more black
@@ -43,10 +48,13 @@ PRINT_COMPRESSION = False  # Use compression in printer data
 PRINT_RED = False  # Use red printing (for compatible printers)
 PRINT_HIGH_DPI = False  # Use 600 DPI (instead of 300)
 PRINT_CUT = True  # Cut the label after printing
+selected_backend = guess_backend(PRINTER_ID)
+BACKEND_CLASS = backend_factory(selected_backend)['backend_class']
 
 
 def main():
     participants = pd.read_csv(INPUT_DATA_PATH)
+    participants.fillna("", inplace=True)
     participants.sort_values("T-shirt size", inplace=True)
     qlr = BrotherQLRaster(PRINTER_MODEL)
     prep_preview_dir()
@@ -121,7 +129,8 @@ def add_t_shirt_size(draw, tshirt_size):
 
 def print_label(label_img, name, qlr):
     label_img = label_img.rotate(90, expand=True)
-    instructions = qlr.convert(
+    instructions = convert(
+        qlr,
         [label_img],
         label=LABEL_PAPER_SPEC,
         rotate=PRINT_ROTATION,
@@ -133,6 +142,10 @@ def print_label(label_img, name, qlr):
         cut=PRINT_CUT
     )
     send(instructions, PRINTER_ID, backend_identifier="pyusb")
+    # be = BACKEND_CLASS(PRINTER_ID)
+    # be.write(qlr.data)
+    # be.dispose()
+    # label = create_label(qlr, label_img, PRINTER_LABEL_SIZE, cut=False)
     print(f"Label printed: {name}")
 
 
@@ -153,7 +166,7 @@ def preview_grid(participants, preview_images):
     if PREVIEW_MODE and PREVIEW_METHOD == "matplotlib" and preview_images:
         # Calculate grid dimensions based on number of images
         num_images = len(preview_images)
-        cols = min(4, num_images)  # Max 4 columns
+        cols = min(PREVIEW_COLUMNS, num_images)
         rows = (num_images + cols - 1) // cols  # Ceiling division
         plt.figure(figsize=(15, 5 * rows))
         for i, img in enumerate(preview_images):
