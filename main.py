@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
+from brother_ql import create_label
 from brother_ql.backends import guess_backend, backend_factory
 from brother_ql.conversion import convert
 from brother_ql.raster import BrotherQLRaster
@@ -10,8 +11,8 @@ from brother_ql.backends.helpers import send
 from slugify import slugify
 
 # Operation mode
-PREVIEW_MODE = False # Set to False to actually print labels
-PREVIEW_METHOD = "matplotlib"  # Options: "pil" (basic), "matplotlib" (grid view)
+PREVIEW_MODE = True # Set to False to actually print labels
+PREVIEW_METHOD = "pil"  # Options: "pil" (basic), "matplotlib" (grid view)
 SAVE_PREVIEWS = False  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
 PREVIEW_COLUMNS = 10
@@ -47,7 +48,7 @@ PRINT_DITHER = False  # Use dithering for image conversion
 PRINT_COMPRESSION = False  # Use compression in printer data
 PRINT_RED = False  # Use red printing (for compatible printers)
 PRINT_HIGH_DPI = False  # Use 600 DPI (instead of 300)
-PRINT_CUT = True  # Cut the label after printing
+PRINT_CUT = False  # Cut the label after printing
 selected_backend = guess_backend(PRINTER_ID)
 BACKEND_CLASS = backend_factory(selected_backend)['backend_class']
 
@@ -129,23 +130,11 @@ def add_t_shirt_size(draw, tshirt_size):
 
 def print_label(label_img, name, qlr):
     label_img = label_img.rotate(90, expand=True)
-    instructions = convert(
-        qlr,
-        [label_img],
-        label=LABEL_PAPER_SPEC,
-        rotate=PRINT_ROTATION,
-        threshold=PRINT_THRESHOLD,
-        dither=PRINT_DITHER,
-        compress=PRINT_COMPRESSION,
-        red=PRINT_RED,
-        dpi_600=PRINT_HIGH_DPI,
-        cut=PRINT_CUT
-    )
-    send(instructions, PRINTER_ID, backend_identifier="pyusb")
-    # be = BACKEND_CLASS(PRINTER_ID)
-    # be.write(qlr.data)
-    # be.dispose()
-    # label = create_label(qlr, label_img, PRINTER_LABEL_SIZE, cut=False)
+    qlr = BrotherQLRaster(PRINTER_MODEL)
+    create_label(qlr, label_img, LABEL_PAPER_SPEC, threshold=70, cut=False, rotate=0)
+    be = BACKEND_CLASS(PRINTER_ID)
+    be.write(qlr.data)
+    be.dispose()
     print(f"Label printed: {name}")
 
 
@@ -164,10 +153,9 @@ def save_preview(label_img, name):
 
 def preview_grid(participants, preview_images):
     if PREVIEW_MODE and PREVIEW_METHOD == "matplotlib" and preview_images:
-        # Calculate grid dimensions based on number of images
         num_images = len(preview_images)
         cols = min(PREVIEW_COLUMNS, num_images)
-        rows = (num_images + cols - 1) // cols  # Ceiling division
+        rows = (num_images + cols - 1) // cols
         plt.figure(figsize=(15, 5 * rows))
         for i, img in enumerate(preview_images):
             plt.subplot(rows, cols, i + 1)
