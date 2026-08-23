@@ -5,21 +5,19 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw, ImageFont
 from brother_ql import create_label
 from brother_ql.backends import guess_backend, backend_factory
-from brother_ql.conversion import convert
 from brother_ql.raster import BrotherQLRaster
-from brother_ql.backends.helpers import send
 from slugify import slugify
 
 # Operation mode
 PREVIEW_MODE = True # Set to False to actually print labels
 PREVIEW_METHOD = "pil"  # Options: "pil" (basic), "matplotlib" (grid view)
-SAVE_PREVIEWS = False  # Set to True to also save preview images to files
+SAVE_PREVIEWS = True  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
 PREVIEW_COLUMNS = 10
 
 # Font settings
-LARGE_FONT = ImageFont.truetype("Inter-Bold.ttf", 75) # Name
-SMALL_FONT = ImageFont.truetype("Inter-Regular.ttf", 50) # Category and t-shirt size
+LARGE_FONT = ImageFont.truetype("Futura PT Medium.ttf", 100) # Name
+SMALL_FONT = ImageFont.truetype("Futura PT Medium.ttf", 60) # Category and t-shirt size
 
 # Constants for layout
 LABEL_SIZE = (991, 413)  # 38x90mm die-cut label, rotated to landscape
@@ -36,7 +34,7 @@ BOTTOM_PADDING = PADDING + DESCENT
 # File and device settings
 # INPUT_DATA_PATH = "names.csv"  # Columns: Name, T-shirt size, Category
 INPUT_DATA_PATH = "test.csv"  # Columns: Name, T-shirt size, Category
-LOGO_IMAGE_PATH = "logo_bw.png"
+LOGO_IMAGE_PATH = "Das Improv Festival Horizontal BW 2026.jpg"
 PRINTER_MODEL = "QL-500"
 PRINTER_ID = "usb://0x04f9:0x2015"  # QL-500 USB ID
 LABEL_PAPER_SPEC = "39x90"  # Die-cut label specification
