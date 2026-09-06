@@ -9,7 +9,7 @@ from brother_ql.raster import BrotherQLRaster
 from slugify import slugify
 
 # Operation mode
-PREVIEW_MODE = True # Set to False to actually print labels
+PREVIEW_MODE = False # Set to False to actually print labels
 PREVIEW_METHOD = "pil"  # Options: "pil" (basic), "matplotlib" (grid view)
 SAVE_PREVIEWS = True  # Set to True to also save preview images to files
 PREVIEW_SAVE_PATH = "label_previews"  # Folder to save preview images if SAVE_PREVIEWS is True
@@ -53,8 +53,6 @@ BACKEND_CLASS = backend_factory(selected_backend)['backend_class']
 
 def main():
     participants = pd.read_csv(INPUT_DATA_PATH)
-    participants.fillna("", inplace=True)
-    participants.sort_values("T-shirt size", inplace=True)
     qlr = BrotherQLRaster(PRINTER_MODEL)
     prep_preview_dir()
     preview_images = []
